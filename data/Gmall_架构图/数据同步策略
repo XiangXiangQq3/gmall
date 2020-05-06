@@ -1,0 +1,37 @@
+数据同步策略
+
+全量同步策略：按天分类，每天存储一份完整的数据（包括之前的数据）作为一个Hive分区
+适用于数据量不大，且每天既会有新数据插入，也会有旧数据修改的场景。
+
+增量同步策略：每日增量，存储每天一份新增的数据，只包含当天的数据作为一个Hive分区
+适用于表数据量大，每天只有新增的数据，之前数据不在修改的场景。
+
+增量及变化策略：每日新增，并且包含着变化，（通过拉链表进行存储）将当天的数据作为一个Hive分区
+适用于表数据量大，每天既有新增数据，同时包含之前数据的修改的场景。
+
+特殊策略：只存入一次。
+1.不再进行修改的表，例如性别，地区，民族等。
+2.日期维度，对日期更加细致型的划分
+
+
+order_info     			增量及变化
+order_detail  			增量
+user_info      			增量及变化（全量）
+base_category1 			全量
+base_category2		    全量
+base_category3 			全量
+cart_info     			新增及变化（特殊这里使用的全量）
+payment_info 		    增量
+sku_info     			全量
+order_status_log 		增量
+spu_info       			全量
+order_refund_info	    增量
+base_province   	    特殊
+base_region     		特殊
+base_trademark   		全量
+activity_info   	 	全量
+activity_order   		增量
+comment_info     		增量
+coupon_info      		全量
+coupon_use      		新增及变化
+favor_info       		新增及变化（特殊这里使用的全量）

@@ -1,0 +1,81 @@
+## 组件
+a1.sources=r1 r2
+a1.channels=c1 c2
+a1.sinks=k1 k2
+
+## source1
+a1.sources.r1.type = org.apache.flume.source.kafka.KafkaSource
+#到达大小刷写channel
+a1.sources.r1.batchSize = 5000
+#到达时间刷写到channel
+a1.sources.r1.batchDurationMillis = 2000
+a1.sources.r1.kafka.bootstrap.servers = hadoop105:9092,hadoop106:9092,hadoop107:9092
+a1.sources.r1.kafka.topics=topic_start
+
+## source2
+a1.sources.r2.type = org.apache.flume.source.kafka.KafkaSource
+a1.sources.r2.batchSize = 5000
+a1.sources.r2.batchDurationMillis = 2000
+a1.sources.r2.kafka.bootstrap.servers = hadoop105:9092,hadoop106:9092,hadoop107:9092
+a1.sources.r2.kafka.topics=topic_event
+
+## channel1
+a1.channels.c1.type = file
+#存取快照 ，存的是索引 ，会跟新内存队列
+a1.channels.c1.checkpointDir = /opt/module/flume/checkpoint/behavior1
+#存的数据的路径
+a1.channels.c1.dataDirs = /opt/module/flume/data/behavior1/
+#备份文件最大大小
+a1.channels.c1.maxFileSize = 2146435071
+#channel内存队列容量
+a1.channels.c1.capacity = 1000000
+#再put进channel不能之后，回滚之前保持 ，等待消费者拉取数据
+a1.channels.c1.keep-alive = 6
+
+## channel2
+a1.channels.c2.type = file
+a1.channels.c2.checkpointDir = /opt/module/flume/checkpoint/behavior2
+a1.channels.c2.dataDirs = /opt/module/flume/data/behavior2/
+a1.channels.c2.maxFileSize = 2146435071
+a1.channels.c2.capacity = 1000000
+a1.channels.c2.keep-alive = 6
+
+## sink1
+a1.sinks.k1.type = hdfs
+#这里相对路径是因为配置了hdfs环境   搭配hive分区进行使用
+a1.sinks.k1.hdfs.path = /origin_data/gmall/log/topic_start/%Y-%m-%d
+a1.sinks.k1.hdfs.filePrefix = logstart-
+a1.sinks.k1.hdfs.round = false
+
+
+##sink2
+a1.sinks.k2.type = hdfs
+a1.sinks.k2.hdfs.path = /origin_data/gmall/log/topic_event/%Y-%m-%d
+a1.sinks.k2.hdfs.filePrefix = logevent-
+a1.sinks.k2.hdfs.round = false
+
+## 不要产生大量小文件
+#到达时间产生新文件
+a1.sinks.k1.hdfs.rollInterval = 10
+#到达大小产生文件
+a1.sinks.k1.hdfs.rollSize = 134217728
+#多少个event产生新文件
+a1.sinks.k1.hdfs.rollCount = 0
+
+a1.sinks.k2.hdfs.rollInterval = 10
+a1.sinks.k2.hdfs.rollSize = 134217728
+a1.sinks.k2.hdfs.rollCount = 0
+
+## 控制输出文件是原生文件。
+a1.sinks.k1.hdfs.fileType = CompressedStream 
+a1.sinks.k2.hdfs.fileType = CompressedStream 
+
+a1.sinks.k1.hdfs.codeC = lzop
+a1.sinks.k2.hdfs.codeC = lzop
+
+## 拼装
+a1.sources.r1.channels = c1
+a1.sinks.k1.channel= c1
+
+a1.sources.r2.channels = c2
+a1.sinks.k2.channel= c2
